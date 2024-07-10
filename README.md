@@ -7,6 +7,7 @@ This repository contains the code for training and evaluating a machine learning
 - [Usage](#usage)
 - [Code Structure](#code-structure)
 - [Arguments](#arguments)
+- [Citation](#citation)
 
 ## Requirements
 
@@ -21,13 +22,13 @@ pip install -r requirements.txt
 To run the script, use:
 
 ```bash
-python main.py --lag <lag_value> --feature_type <feature_type_value> --no_text <no_text_flag> --no_text_features <no_text_features_value> --only_text <only_text_flag>
+python main.py --no_text <no_text_flag> --no_text_features <no_text_features_value> --only_text <only_text_flag>
 ```
 
 For example:
 
 ```bash
-python main.py --lag 0 --feature_type 'nrc_lex' --no_text False --no_text_features 'all' --only_text False
+python main.py  --no_text False --no_text_features 'all' --only_text False
 ```
 
 ## Code Structure
@@ -43,8 +44,11 @@ The main script is structured as follows:
 
 The script accepts the following command-line arguments:
 
-- `--lag`: Integer, default is 0. Specifies the quarters of lag.
-- `--feature_type`: String, default is 'nrc_lex'. Specifies the method for encoding text.
 - `--no_text`: Boolean, default is False. Indicates if no text features should be included.
 - `--no_text_features`: String, default is 'all'. Specifies the type of features to exclude when `--no_text` is True.
 - `--only_text`: Boolean, default is False. Indicates if only text features should be included.
+
+## Citation 
+
+If you use the code in this repository, please cite the following work:
+

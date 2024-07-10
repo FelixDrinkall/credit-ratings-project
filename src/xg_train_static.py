@@ -16,8 +16,6 @@ import joblib
 nltk.download('punkt')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--lag', type=int, default=0, help='Quarters of lag.')
-parser.add_argument('--feature_type', type=str, default='nrc_lex', help='Method for encoding text.')
 parser.add_argument('--no_text', type=bool, default=False, help='ONLY FOR RF MODEL - no text included in calculation.')
 parser.add_argument('--no_text_features', type=str, default='all', help='ONLY FOR RF MODEL - no text included in calculation.')
 parser.add_argument('--only_text', type=bool, default=False, help='ONLY FOR RF MODEL - no text included in calculation.')
@@ -34,23 +32,6 @@ def extract_text_before_last_underscore(s):
 
 class CR_Model:
     def __init__(self, args):
-        self.feature_type = args.feature_type
-        self.threshold_dict = {0: '2005Q3', 
-                               1: '2009Q1', 
-                               2: '2009Q3', 
-                               3: '2010Q2'}
-        
-        self.quarters_total = ['1994Q1', '1994Q2', '1994Q3', '1994Q4', '1995Q1', '1995Q2', '1995Q3', '1995Q4', 
-                               '1996Q1', '1996Q2', '1996Q3', '1996Q4', '1997Q1', '1997Q2', '1997Q3', '1997Q4',
-                               '1998Q1', '1998Q2', '1998Q3', '1998Q4', '1999Q1', '1999Q2', '1999Q3', '1999Q4',
-                               '2000Q1', '2000Q2', '2000Q3', '2000Q4', '2001Q1', '2001Q2', '2001Q3', '2001Q4',
-                               '2002Q1', '2002Q2', '2002Q3', '2002Q4', '2003Q1', '2003Q2', '2003Q3', '2003Q4',
-                               '2004Q1', '2004Q2', '2004Q3', '2004Q4', '2005Q1', '2005Q2', '2005Q3', '2005Q4',
-                               '2006Q1', '2006Q2', '2006Q3', '2006Q4', '2007Q1', '2007Q2', '2007Q3', '2007Q4',
-                               '2008Q1', '2008Q2', '2008Q3', '2008Q4', '2009Q1', '2009Q2', '2009Q3', '2009Q4',
-                               '2010Q1', '2010Q2', '2010Q3', '2010Q4', '2011Q1', '2011Q2', '2011Q3', '2011Q4',
-                               '2012Q1', '2012Q2', '2012Q3', '2012Q4', '2013Q1', '2013Q2', '2013Q3', '2013Q4',
-                               '2014Q1', '2014Q2', '2014Q3', '2014Q4', '2015Q1', '2015Q2', '2015Q3']
         
         self.fund_col_names = ['niq', 'ltq', 'piq', 'atq', 'gind',
                                'ggroup', 'gsector', 'gsubind', 'lt_rating']
@@ -68,6 +49,9 @@ class CR_Model:
         self.text_col_names = ['mda']
 
         self.target_col = 'change'
+
+        self.feature_types = ["bert_emo", "bert", "clusters_all-mpnet-base-v2", "lda", "lm_lex",
+                              "longformer", "nrc_lex", "tfidf_unigrams", "clusters_all-roberta-large-v1"]
 
         self.feature_importances_by_category = {'fundamental': 0, 'macro': 0, 'text': 0}
         self.feature_importances_by_category_accumulated = {'fundamental': [], 'macro': [], 'text': []}
@@ -398,11 +382,7 @@ class CR_Model:
             results.to_csv(results_path, mode='w', header=True, index=False)
 
     def main(self):
-        feature_types = ["bert_emo", "bert", "clusters_all-mpnet-base-v2", "lda", "lm_lex",
-                         "longformer", "nrc_lex", "tfidf_unigrams", "clusters_all-roberta-large-v1", "clusters"]
-        feature_types = ['gpt4o_text_only']
-        feature_types = ["clusters_all-roberta-large-v1"]
-        for feature_type in feature_types:
+        for feature_type in self.feature_types:
             self.feature_type = feature_type
             if args.no_text:
                 self.results_dir = f'results_static/no_text/{args.no_text_features}'
