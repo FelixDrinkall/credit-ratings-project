@@ -32,7 +32,7 @@ def extract_text_before_last_underscore(s):
     last_underscore_index = s.rfind('_')
     return s[:last_underscore_index]
 
-class ModelTrainer:
+class CR_Model:
     def __init__(self, args):
         self.feature_type = args.feature_type
         self.threshold_dict = {0: '2005Q3', 
@@ -449,5 +449,5 @@ def convert(o):
     raise TypeError
 
 if __name__ == "__main__":
-    trainer = ModelTrainer(args)
+    trainer = CR_Model(args)
     trainer.main()
