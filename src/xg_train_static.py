@@ -16,9 +16,9 @@ import joblib
 nltk.download('punkt')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--no_text', type=bool, default=False, help='ONLY FOR RF MODEL - no text included in calculation.')
-parser.add_argument('--no_text_features', type=str, default='all', help='ONLY FOR RF MODEL - no text included in calculation.')
-parser.add_argument('--only_text', type=bool, default=False, help='ONLY FOR RF MODEL - no text included in calculation.')
+parser.add_argument('--no_text', type=bool, default=False, help='Indicates if no text features should be included.')
+parser.add_argument('--no_text_features', type=str, default='all', help='Specifies the type of features to exclude when --no_text is True.')
+parser.add_argument('--only_text', type=bool, default=False, help='Indicates if only text features should be included.')
 args = parser.parse_args()
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -164,8 +164,7 @@ class CR_Model:
         self.evaluate_model(y_test, predictions)
 
         self.save_predictions_with_metadata(metadata_test, y_test, predictions, lag)
-        # self.analyze_feature_gradients(model, X_train, y_train, lag)  
-
+        self.analyze_feature_gradients(model, X_train, y_train, lag)  
 
         return model, classification_report(y_test, predictions, output_dict=True)
     
