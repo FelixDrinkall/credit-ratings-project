@@ -7,8 +7,6 @@ This repository contains the code for training and evaluating a machine learning
 - [Usage](#usage)
 - [Code Structure](#code-structure)
 - [Arguments](#arguments)
-- [Class Descriptions](#class-descriptions)
-- [Functions](#functions)
 
 ## Requirements
 
