@@ -12,20 +12,20 @@ This repository contains the code for training and evaluating a machine learning
 
 To install the required libraries, run:
 
-```bash
-pip install -r requirements.txt
+'''bash
+pip install -r requirements.txt'''
 
 ## Usage
 
 To run the script, use:
 
-```bash
-python main.py --lag <lag_value> --feature_type <feature_type_value> --no_text <no_text_flag> --no_text_features <no_text_features_value> --only_text <only_text_flag>
+'''bash
+python main.py --lag <lag_value> --feature_type <feature_type_value> --no_text <no_text_flag> --no_text_features <no_text_features_value> --only_text <only_text_flag>'''
 
 For example:
 
-```bash
-python main.py --lag 0 --feature_type 'nrc_lex' --no_text False --no_text_features 'all' --only_text False
+'''bash
+python main.py --lag 0 --feature_type 'nrc_lex' --no_text False --no_text_features 'all' --only_text False'''
 
 ## Code Structure
 
