@@ -1,56 +1,19 @@
 import pandas as pd
 import numpy as np
 import torch
-import logging
-import torch.optim as optim
-import torch.nn as nn
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-from torch.utils.data import Dataset, DataLoader
-from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_auc_score, roc_curve
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.inspection import partial_dependence, PartialDependenceDisplay
 import matplotlib.pyplot as plt
-import itertools
-from itertools import product
 import os
-import pickle
 import argparse
-import copy
 import xgboost as xgb
 from tqdm import tqdm
 from tqdm.auto import tqdm
 import json
 import nltk
 import joblib
-from nltk.tokenize import sent_tokenize
 nltk.download('punkt')
-import wandb
-import random
-
-from model import *
-from utils import *
-# from data_loaders import *
-from evaluation import *
-# from text_encoders import *
-from random_forest import *
-
-if not torch.cuda.is_available():
-    print("CUDA not available! Running on CPU. ")
-else:
-    print("CUDA is available!!")
-    
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-SEED = 4
-print(SEED)
-random.seed(SEED)
-np.random.seed(SEED)
-
-torch.manual_seed(SEED)
-if torch.cuda.is_available():
-    torch.cuda.manual_seed(SEED)
-    torch.cuda.manual_seed_all(SEED)  
-torch.backends.cudnn.deterministic = True
-torch.backends.cudnn.benchmark = False
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--lag', type=int, default=0, help='Quarters of lag.')
@@ -217,8 +180,61 @@ class ModelTrainer:
         self.evaluate_model(y_test, predictions)
 
         self.save_predictions_with_metadata(metadata_test, y_test, predictions, lag)
+        # self.analyze_feature_gradients(model, X_train, y_train, lag)  
+
 
         return model, classification_report(y_test, predictions, output_dict=True)
+    
+    def analyze_feature_gradients(self, model, X, y, lag):
+
+        classes = np.unique(y)  
+        positive_class = np.where(classes == 2.0)[0][0] 
+        negative_class = np.where(classes == 0.0)[0][0]  
+
+        max_positive_gradient = {'feature': None, 'gradient': -np.inf}
+        max_negative_gradient = {'feature': None, 'gradient': -np.inf}
+        text_features = [col for col in X.columns if self.is_in_category(col) == 'text']
+
+        for feature in tqdm(text_features, desc="Analyzing PDPs"):
+            results = partial_dependence(model, X, features=[feature], kind='average')
+            pdp_values = results['average'][0]
+            mean_pdp = np.mean(pdp_values)
+            
+            gradient_change = np.max(pdp_values) - np.min(pdp_values)
+            if mean_pdp > 0 and gradient_change > max_positive_gradient['gradient']:
+                max_positive_gradient = {'feature': feature, 'gradient': gradient_change}
+            elif mean_pdp > 0 and abs(gradient_change) > max_negative_gradient['gradient']:
+                max_negative_gradient = {'feature': feature, 'gradient': abs(gradient_change)}
+
+        fig, axs = plt.subplots(2, 1, figsize=(8, 12))
+
+        font_size = 14 
+        plt.rc('font', size=font_size)
+
+        if max_positive_gradient['feature'] is not None:
+            print("P")
+            PartialDependenceDisplay.from_estimator(
+                model, X, features=[max_positive_gradient['feature']], ax=axs[0], kind='average', target=positive_class
+            )
+            # axs[0].set_title(f"PDP of {max_positive_gradient['feature']} on 'Up' class")
+            pos_text = str(max_positive_gradient['feature'])
+            axs[0].set_xlabel(pos_text)
+            axs[0].set_ylabel('Predicted outcome change')
+
+        if max_negative_gradient['feature'] is not None:
+            print("N")
+            PartialDependenceDisplay.from_estimator(
+                model, X, features=[max_negative_gradient['feature']], ax=axs[1], kind='average', target=negative_class
+            )
+            # axs[1].set_title(f"PDP of {max_negative_gradient['feature']} on 'Down' class")
+            neg_text = str(max_negative_gradient['feature'])
+            axs[1].set_xlabel(neg_text)
+            axs[1].set_ylabel('Predicted outcome change')
+
+        plt.tight_layout()
+        plt.savefig(f'feature_gradients_{lag}.png')
+        plt.show()
+
 
     def train_and_evaluate_proba(self, train_df, test_df, lag):
         X_train = self.format_dataframe(train_df, lag)
@@ -402,9 +418,7 @@ class ModelTrainer:
 
                 train_df = df[df['quarter'].str[:4].astype(int) <= 2012]
                 test_df = df[df['quarter'].str[:4].astype(int).isin([2015, 2016])]
-                # print(test_df.shape)
-                # print(test_df.drop_duplicates(subset=["cik", "quarter"]).shape)
-                # break
+
                 if not test_df.empty:
                     model, classif_report = self.train_and_evaluate(train_df, test_df, lag)
                     self.save_results(model, classif_report, self.feature_type, lag, "2012Q4")                  
@@ -419,7 +433,6 @@ class ModelTrainer:
 
                 self.feature_importances_by_category_accumulated = {'fundamental': [], 'macro': [], 'text': []}
                 self.individual_feature_importances_accumulated = {}
-            # break
 
     def save_averaged_feature_importances_for_lag(self, averaged_by_category, averaged_individual, lag):
         with open(f'{self.results_dir}/lag{lag}/averaged_total_feature_importances_by_category.json', 'w') as f:
