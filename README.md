@@ -1,6 +1,6 @@
 # Model Training and Evaluation
 
-This repository contains the code for training and evaluating a machine learning model to predict financial outcomes based on various features, including text data.
+This repository contains the code for training and evaluating a machine learning model to predict financial outcomes based on various features, including text data. More processing code will be uploaded in due course.
 
 ## Table of Contents
 - [Requirements](#requirements)
