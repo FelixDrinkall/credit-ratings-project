@@ -52,3 +52,12 @@ The script accepts the following command-line arguments:
 
 If you use the code in this repository, please cite the following work:
 
+@misc{drinkall2024traditionalmethodsoutperformgenerative,
+      title={Traditional Methods Outperform Generative LLMs at Forecasting Credit Ratings}, 
+      author={Felix Drinkall and Janet B. Pierrehumbert and Stefan Zohren},
+      year={2024},
+      eprint={2407.17624},
+      archivePrefix={arXiv},
+      primaryClass={q-fin.RM},
+      url={https://arxiv.org/abs/2407.17624}, 
+}
