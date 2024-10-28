@@ -22,7 +22,7 @@ pip install -r requirements.txt
 To run the script, use:
 
 ```bash
-python main.py --no_text <no_text_flag> --no_text_features <no_text_features_value> --only_text <only_text_flag>
+python main.py <<insert flags>>
 ```
 
 For example:
